@@ -14,13 +14,38 @@ async function listEmployees() {
 
     let ch = custom_headers();
 
-    console.log("-> list", ch);
+    console.log("-> list");
 
-    let res = (await axios
-        .get(base_url + "api/employees", ch)
-    ).data;
-    console.log("list_response", res);
-    return res;
+    try {
+
+        let _res = await axios
+            .get(base_url + "api/employees", ch);
+
+        console.log("list_response", _res);
+
+        return _res.data;
+
+    } catch (error) {
+
+        let { response } = error;
+
+        if (response?.status === 403) {
+            console.error("unauthorized");
+            console.error(error);
+
+            // TODO - redirect user to login_page
+
+        } else {
+            console.log("err-listEmployees", error);
+
+            // TODO - use logger
+
+        }
+
+    }
+
+    return [];
+
 }
 
 async function addEmployee() { console.log("-> add"); }

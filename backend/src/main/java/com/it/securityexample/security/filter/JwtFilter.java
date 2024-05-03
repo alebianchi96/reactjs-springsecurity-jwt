@@ -14,11 +14,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.it.securityexample.security.JwtService;
 import com.it.securityexample.user.UserService;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -38,34 +41,48 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Extracting token from the request header
         String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String userName = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            // Extracting the token from the Authorization header
-            token = authHeader.substring(7);
-            // Extracting username from the token
-            userName = jwtService.extractUserName(token);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Extracting the token from the Authorization header
+        String token = authHeader.substring(7);
+        String userName = jwtService.extractUserName(token);
+
+        if (userName == null || SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
         // If username is extracted and there is no authentication in the current
         // SecurityContext
-        if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // Loading UserDetails by username extracted from the token
-            UserDetails userDetails = getUserService().loadUserByUsername(userName);
 
-            // Validating the token with loaded UserDetails
-            if (jwtService.validateToken(token, userDetails)) {
-                // Creating an authentication token using UserDetails
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                // Setting authentication details
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // Setting the authentication token in the SecurityContext
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+        // Loading UserDetails by username extracted from the token
+        boolean isValid = false;
+        UserDetails userDetails = null;
+        try {
+            userDetails = getUserService().loadUserByUsername(userName);
+            isValid = jwtService.validateToken(token, userDetails);
+        } catch (ExpiredJwtException e) {
+            log.error("Expired token");
+            // a generic 403 exception will be returned caused by other prioritized filter
+            // wrapping
+        }
+
+        // Validating the token with loaded UserDetails
+        if (isValid) {
+
+            // Creating an authentication token using UserDetails
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            // Setting authentication details
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            // Setting the authentication token in the SecurityContext
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
         }
 
         // Proceeding with the filter chain
