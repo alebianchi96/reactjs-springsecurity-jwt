@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  be-spring-security:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    depends_on:
+      - db-employee
+    ports:
+      - 8080:8080
+
+  db-employee:
+    image: postgres:14.4
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - be-spring-security
+    ports:
+      - "80:80"

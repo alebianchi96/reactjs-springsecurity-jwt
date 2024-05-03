@@ -1,0 +1,4 @@
+technologies:
+    - postgres
+    - springboot
+    - docker
