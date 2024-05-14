@@ -1,6 +1,7 @@
-import axios from 'axios';
 import { buildSimpleJwtHeader } from '../utils/jwt_utils';
 import { buildBeUrl } from '../routes/routes.service';
+
+import { do_get } from '../../client/http_rest_client';
 
 const endpoints = {
     "list": "api/employees"
@@ -8,7 +9,10 @@ const endpoints = {
 
 
 async function listEmployees() {
-    return await axios.get(buildBeUrl(endpoints.list), buildSimpleJwtHeader());
+    return await do_get({
+        "url": buildBeUrl(endpoints.list),
+        "header": buildSimpleJwtHeader()
+    });
 }
 
 async function addEmployee() { console.log("-> add"); }

@@ -31,15 +31,21 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private ApplicationContext applicationContext;
 
-    // Method to lazily fetch the UserService bean from the ApplicationContext
-    // This is done to avoid Circular Dependency issues
+    /**
+     * Method to lazily fetch the UserService bean from the ApplicationContext
+     * This is done to avoid Circular Dependency issues
+     * 
+     * @return
+     */
     private UserService getUserService() {
         return applicationContext.getBean(UserService.class);
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
 
@@ -82,6 +88,11 @@ public class JwtFilter extends OncePerRequestFilter {
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             // Setting the authentication token in the SecurityContext
             SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            // if auth was successfull, procedure will create an updated
+            // jwt token for the client
+            String refreshedToken = jwtService.generateToken(userName);
+            response.addHeader("XX_AUTH_JWT_TOKEN", refreshedToken);
 
         }
 

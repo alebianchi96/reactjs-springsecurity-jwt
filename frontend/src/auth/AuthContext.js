@@ -1,5 +1,5 @@
 
-import axios from 'axios';
+import { do_post } from '../client/http_rest_client';
 import React, { createContext, useState } from 'react';
 
 import { buildBeUrl } from '../service/routes/routes.service';
@@ -17,7 +17,12 @@ export const AuthProvider = ({ children }) => {
     async function loginInContext({ loginForm, resetLoginForm }) {
 
         try {
-            let res = await axios.post(buildBeUrl("user/login"), loginForm);
+
+            let res = await do_post({
+                "url": buildBeUrl("user/login"),
+                "body": loginForm
+            });
+
             if (res.status === 200 && res.data) {
                 setJwtInStorage(res.data);
                 setIsAuthenticated(true);
@@ -26,6 +31,7 @@ export const AuthProvider = ({ children }) => {
             console.log("Login non riuscita: ", res);
             resetLoginForm();
             return false;
+
         } catch ({ code, response }) {
             console.log("Login non riuscita: ", response?.data);
             resetLoginForm();
