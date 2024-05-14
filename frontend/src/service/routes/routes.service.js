@@ -1,3 +1,9 @@
 const base_url = "/be-spring-security/";
 
-export { base_url };
+
+function buildBeUrl(endpoint) {
+    return base_url + endpoint;
+}
+
+
+export { buildBeUrl };
