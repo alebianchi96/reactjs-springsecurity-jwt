@@ -27,8 +27,10 @@ public class SecurityexampleApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 
+		// Automatic creation of a DEFAULT_USER
 		userService.createDefaultUser();
 
+		// Automatic creation of sample Employees
 		for (EmployeeEntity e : List.of(
 				new EmployeeEntity("Aarav Kumar", "aarav.kumar@example.com", "HR", "Tech Innovations Pvt Ltd"),
 				new EmployeeEntity("Diya Sharma", "diya.sharma@example.com", "Marketing", "Creative Minds Ltd"),

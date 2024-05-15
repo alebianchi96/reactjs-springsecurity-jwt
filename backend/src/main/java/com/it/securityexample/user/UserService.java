@@ -20,8 +20,6 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UserPasswordEncoder upEncoder;
 
-    private static final UserEntity DEFAULT_USER = new UserEntity("ale", "ale");
-
     public UserEntity saveUser(UserEntity user) {
         user.setPassword(upEncoder.getPassEncoder().encode(user.getPassword()));
         return userDao.save(user);
@@ -38,25 +36,31 @@ public class UserService implements UserDetailsService {
     }
 
     /**
-     * Il default user per questa app di test è
+     * In that example, at the start of the application a DEFAULT_USER will
+     * be created in database in order to allow developers to test
+     * 
      * { username:"ale", password:"ale" }
      * 
      */
     public void createDefaultUser() {
 
+        final UserEntity defaultUser = new UserEntity("ale", "ale");
+
         // controllo se esiste un utente username:"ale"
-        UserEntity user = userDao.findByUsername(DEFAULT_USER.getUsername());
+        UserEntity user = userDao.findByUsername(defaultUser.getUsername());
 
         // se non esiste lo genero
         if (user == null) {
-            user = new UserEntity(DEFAULT_USER.getUsername(), DEFAULT_USER.getPassword());
+            user = new UserEntity(defaultUser.getUsername(), defaultUser.getPassword());
             this.saveUser(user);
         }
 
         // scrivo nel log le indicazioni riguardo il default user da usare
         log.info("");
-        log.info(String.format("L'utente di default per questa applicazione è { username:'%s', password:'%s' }",
-                DEFAULT_USER.getUsername(), DEFAULT_USER.getPassword()));
+        log.info(String.format(
+                "DEFAULT_USER for this application is { username:'%s', password:'%s' }",
+                defaultUser.getUsername(),
+                defaultUser.getPassword()));
         log.info("");
 
     }

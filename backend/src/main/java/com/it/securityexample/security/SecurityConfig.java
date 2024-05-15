@@ -49,6 +49,13 @@ public class SecurityConfig {
         return provider;
     }
 
+    /**
+     * Allowed as no-authenticated only [ "/user/login", "/user/register" ]
+     * All other calls must be filtered by [ "jwtFilter",
+     * "UsernamePasswordAuthenticationFilter" ]
+     * 
+     * 
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity

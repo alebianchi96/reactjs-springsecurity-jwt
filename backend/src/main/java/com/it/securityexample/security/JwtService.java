@@ -17,6 +17,14 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * Component to interact with JWTs:
+ * - creation
+ * - query
+ * - get data...
+ * 
+ * 
+ */
 @Component
 @Log4j2
 public class JwtService {
@@ -35,8 +43,10 @@ public class JwtService {
      * @return
      */
     public String generateToken(String userName) {
-        // Prepare claims for the token
+
+        // In that sample, no claims will be specified
         Map<String, Object> claims = new HashMap<>();
+
         // Build JWT token with claims, subject, issued time, expiration time, and
         // signing algorithm
         return Jwts.builder()

@@ -4,6 +4,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/**
+ * Singleton used to define a single common instance of
+ * password encoder
+ * 
+ * 
+ */
 @Component
 public class UserPasswordEncoder {
 

@@ -31,6 +31,11 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private ApplicationContext applicationContext;
 
+    private static final String JWT_REQUEST_HEADER = "Authorization";
+    private static final String JWT_REQUEST_PREFIX = "Bearer ";
+
+    private static final String JWT_RESPONSE_HEADER = "XX_AUTH_JWT_TOKEN";
+
     /**
      * Method to lazily fetch the UserService bean from the ApplicationContext
      * This is done to avoid Circular Dependency issues
@@ -41,36 +46,44 @@ public class JwtFilter extends OncePerRequestFilter {
         return applicationContext.getBean(UserService.class);
     }
 
+    /**
+     * 1. Get the JWT from request.header "Authorization"
+     * 2. Get username from JWT
+     * 3. Get UserDetails by username extracted from the token
+     * 4. Validate the token by UserDetails
+     * 5. if Token JWT is valid -> Check user and password
+     * 6. if All is ok -> the SecurityContext can be updated by current token
+     * 7. if All is ok -> A refreshed token can be created and passed back to client
+     * for further requests
+     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // Get the JWT from Request.Header
+        String authHeader = request.getHeader(JWT_REQUEST_HEADER);
+        if (authHeader == null || !authHeader.startsWith(JWT_REQUEST_PREFIX)) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        // Extracting the token from the Authorization header
         String token = authHeader.substring(7);
-        String userName = jwtService.extractUserName(token);
 
-        if (userName == null || SecurityContextHolder.getContext().getAuthentication() != null) {
+        // Get username from JWT
+        String userName = jwtService.extractUserName(token);
+        if (userName == null
+                || SecurityContextHolder.getContext().getAuthentication() != null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // If username is extracted and there is no authentication in the current
-        // SecurityContext
-
-        // Loading UserDetails by username extracted from the token
         boolean isValid = false;
         UserDetails userDetails = null;
         try {
+            // Get UserDetails by username extracted from the token
             userDetails = getUserService().loadUserByUsername(userName);
+            // Validate the token by UserDetails
             isValid = jwtService.validateToken(token, userDetails);
         } catch (ExpiredJwtException e) {
             log.error("Expired token");
@@ -78,25 +91,23 @@ public class JwtFilter extends OncePerRequestFilter {
             // wrapping
         }
 
-        // Validating the token with loaded UserDetails
         if (isValid) {
 
-            // Creating an authentication token using UserDetails
+            // Token JWT is valid so Check user and password
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
-            // Setting authentication details
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            // Setting the authentication token in the SecurityContext
+
+            // All is ok so the SecurityContext can be updated by current token
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            // if auth was successfull, procedure will create an updated
-            // jwt token for the client
+            // A refreshed token can be created and passed back to client for
+            // further requests
             String refreshedToken = jwtService.generateToken(userName);
-            response.addHeader("XX_AUTH_JWT_TOKEN", refreshedToken);
+            response.addHeader(JWT_RESPONSE_HEADER, refreshedToken);
 
         }
 
-        // Proceeding with the filter chain
         filterChain.doFilter(request, response);
 
     }

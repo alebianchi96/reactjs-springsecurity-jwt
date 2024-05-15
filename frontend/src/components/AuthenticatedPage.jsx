@@ -51,8 +51,6 @@ const AuthenticatedPage = () => {
                     <li>Gestione secrets lato BE: usa vault (al momento sono nelle properties) _
                         <i>https://spring.io/projects/spring-vault#samples</i>
                     </li>
-                    <li>Commit di entrambi i progetti: basic e jwt</li>
-                    <li>Gestione scadenza tocken dopo 3 secondi: non viene refreshato ad ogni chiamata</li>
                 </ul>
             </div>
 

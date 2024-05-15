@@ -7,6 +7,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+/**
+ * DTO mapping Interface "UserDetails" used to interact with Spring Security
+ * methods.
+ * 
+ * 
+ */
 public class UserPrincipalDTO implements UserDetails {
 
     private UserEntity user;
@@ -18,6 +24,10 @@ public class UserPrincipalDTO implements UserDetails {
         this.user = user;
     }
 
+    /**
+     * In that example, no significant grants will be specified for each user
+     * 
+     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(new SimpleGrantedAuthority("USER"));
