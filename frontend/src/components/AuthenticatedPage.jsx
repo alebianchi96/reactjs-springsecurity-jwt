@@ -46,12 +46,7 @@ const AuthenticatedPage = () => {
             <br />
 
             <div>
-                TODO:
-                <ul>
-                    <li>Gestione secrets lato BE: usa vault (al momento sono nelle properties) _
-                        <i>https://spring.io/projects/spring-vault#samples</i>
-                    </li>
-                </ul>
+                Enjoy this test case with JWT Authentication!
             </div>
 
             <br />
